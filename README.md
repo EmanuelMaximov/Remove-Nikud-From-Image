@@ -11,6 +11,6 @@ In terminal (Python 3.10):
 
 ## Example:
 ![Source Image URL](SourceImage.png?raw=true)
-![Output Image URL](outputImage.png?raw=true)
+![Output Image URL](OutputImage.png?raw=true)
 
 
