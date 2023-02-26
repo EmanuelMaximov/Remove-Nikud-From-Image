@@ -1,59 +1,66 @@
-import numpy as np
 import sys
 import cv2
 
 
 def main(argv):
     if len(argv) < 1:
-        print('Not enough parameters')
-        print('Usage:\nmorph_lines_detection.py < path_to_image >')
+        print('\nNot enough parameters!')
+        print('Usage:\npython main.py <path_to_image>')
         return -1
 
     # Load the image
     img = cv2.imread(argv[0], cv2.IMREAD_COLOR)
-    b, g, r = (img[0, 0])
-    img_background = (int(b), int(g), int(r))
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Check if image is loaded fine
     if img is None:
         print('Error opening image: ' + argv[0])
         return -1
 
+    # Image Background Sample
+    b, g, r = (img[0, 0])
+    img_background = (int(b), int(g), int(r))
+
+    # Convert to Grayscale for further thresholding
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
     # Show source image
     cv2.imshow("Source Image", img)
 
-    # Convert to Mask (Binary Image)
-    thresh = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY_INV)[1]
+    # Threshold - Convert to Mask (Binary Image)
+    # Threshold accordingly to image size
+    if img.shape[1] < 600:
+        thresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1]
+    else:
+        thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)[1]
 
     # detect the contours on the binary image using cv2.CHAIN_APPROX_NONE
     contours, _ = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
     contour_indexes = []
-
     heights = set()
     widths = set()
-    cnt_areas = set()
     for c in contours:
-        x, y, w, h = cv2.boundingRect(c)
+        _, _, w, h = cv2.boundingRect(c)
         heights.add(h)
         widths.add(w)
-        cnt_areas.add(int(cv2.contourArea(c)))
-        # cv2.putText(image_copy, str(w), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-        # cv2.rectangle(img, (x, y), (x + w, y + h), (36, 255, 12), 1)
+
+    # Remove noise contours
     heights = list(filter(lambda a: a > 2, heights))
     widths = list(filter(lambda a: a > 2, widths))
-    cnt_areas = list(filter(lambda a: a > 2, cnt_areas))
+
+    # Find the Maximum Height and Width of all contours
     heights.sort()
     widths.sort()
-    cnt_areas.sort()
-
     max_height = heights[-1]
     max_width = widths[-1]
-
+    # The ratio between biggest letter (ץ,ף,ק,ן) and smallest letter (י)
+    width_ratio = 0.5
+    height_ratio = 0.35
     for index, cnt in enumerate(contours):
-        x, y, w, h = cv2.boundingRect(cnt)
-        if not (w > max_width * 0.5 or h > max_height * 0.35):
+        # Extract Contour width and height
+        _, _, w, h = cv2.boundingRect(cnt)
+        # Mark the demarcation for removing
+        if not (w > max_width * width_ratio or h > max_height * height_ratio):
             contour_indexes.append(index)
 
     for i in contour_indexes:
@@ -65,16 +72,8 @@ def main(argv):
     cv2.imshow('Without demarcation', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-    # element1 = np.array([[1, 1, 1, 1, 1, 1, 1]], dtype=bw.dtype)
-    # edges = cv2.Canny(image=src, threshold1=100, threshold2=200)
-    # mask = cv2.erode(bw, element1, iterations=1)
-    # mask = cv2.dilate(mask, element, iterations=1)
-    # mask = cv.morphologyEx(bw, cv.MORPH_OPEN, element)
-    # btand = cv.bitwise_and(mask, bw)
-
     return 0
 
 
 if __name__ == "__main__":
-    main(["test_num_1.png"])
+    main(sys.argv[1:])
