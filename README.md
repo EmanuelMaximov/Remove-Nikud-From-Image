@@ -9,7 +9,8 @@ Removes Nikud (Niqqud - signs used to represent vowels) from an image with text 
 In terminal (Python 3.10): 
 ``` python main.py "test1.png" ```
 
-Example:
-![alt text](https://ibb.co/b62F4qR)
-![alt text](https://ibb.co/ngWg7J6)
+## Example:
+![Source Image URL](SourceImage.png?raw=true)
+![Output Image URL](outputImage.png?raw=true)
+
 
